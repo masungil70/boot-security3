@@ -44,6 +44,7 @@ public class MemberService implements UserDetailsService {
 			throw new UsernameNotFoundException(username + " 사용자가 존재하지 않습니다");
 		}
 		
+		log.info("resultVO = {}", resultVO);
 		//로그인 횟수를 카운트 한다
 		memberMapper.loginCountInc(resultVO);
 		

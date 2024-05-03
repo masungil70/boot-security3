@@ -3,17 +3,26 @@ package org.kosa.hello.config;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.kosa.hello.auth.filter.JsonUsernamePasswordAuthenticationFilter;
 import org.kosa.hello.member.AuthFailureHandler;
 import org.kosa.hello.member.AuthSucessHandler;
+import org.kosa.hello.member.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import jakarta.servlet.DispatcherType;
@@ -23,6 +32,8 @@ import jakarta.servlet.DispatcherType;
 @EnableWebSecurity // 시큐리티 필터 등록
 public class SecurityConfig {
 	
+	@Autowired
+	private MemberService memberService;
 	@Autowired
 	private AuthSucessHandler authSucessHandler;
 	@Autowired
@@ -47,11 +58,12 @@ public class SecurityConfig {
     	.authorizeHttpRequests(authorize -> authorize 
         	.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
 			.permitAll() // 해당 경로들은 접근을 허용
-    		.requestMatchers("/", "/login/loginForm", "/resource/**")
+    		.requestMatchers("/", "/login/loginForm", "/resources/**")
 			.permitAll() // 해당 경로들은 접근을 허용
 			.anyRequest() // 다른 모든 요청은
 			.authenticated() // 인증된 유저만 접근을 허용
 		)
+    	.addFilterBefore(jsonUsernamePasswordLoginFilter(), UsernamePasswordAuthenticationFilter.class)
 		.formLogin(login -> login
 			.usernameParameter("email")
 			.passwordParameter("password")
@@ -81,5 +93,30 @@ public class SecurityConfig {
 		);
         return http.build();
 	}
+	
+	// 인증 관리자 관련 설정
+		@Bean
+		public DaoAuthenticationProvider daoAuthenticationProvider() throws Exception {
+			DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+
+			daoAuthenticationProvider.setUserDetailsService(memberService);
+			daoAuthenticationProvider.setPasswordEncoder(encryptPassword());
+
+			return daoAuthenticationProvider;
+		}
+
+		@Bean
+		public AuthenticationManager authenticationManager() throws Exception {//AuthenticationManager 등록
+			DaoAuthenticationProvider provider = daoAuthenticationProvider();//DaoAuthenticationProvider 사용
+			provider.setPasswordEncoder(encryptPassword());//
+			return new ProviderManager(provider);
+		}
+
+		@Bean
+		public JsonUsernamePasswordAuthenticationFilter jsonUsernamePasswordLoginFilter() throws Exception {
+			JsonUsernamePasswordAuthenticationFilter jsonUsernamePasswordLoginFilter = new JsonUsernamePasswordAuthenticationFilter();
+			jsonUsernamePasswordLoginFilter.setAuthenticationManager(authenticationManager());
+			return jsonUsernamePasswordLoginFilter;
+		}	
 
 }

@@ -6,10 +6,11 @@
 <head>
 <meta charset="UTF-8">
 <title>로그인양식</title>
+<script type="text/javascript" src="../resources/js/common.js"></script>
 </head>
 <body>
 
-<form action="/login" method="post">
+<form id="login" action="/login" method="post">
 	아이디 : <input type="text" name="email"/><br/>
 	비밀번호 : <input type="password" name="password"/><br/>
 	<input type="submit" value="로그인">
@@ -20,6 +21,21 @@
 	if (msg !== "")  {
 		alert(msg);
 	}
+	
+	login.addEventListener('submit', function (event) {
+		event.preventDefault();
+		myFetch("/login", "login", json => {
+			if(json.status == 0) {
+				//성공
+				alert("성공");
+				location.href = "/"
+			} else {
+				alert(json.statusMessage);
+			}
+		});
+
+	})
+			
 </script>
 </body>
 </html>
