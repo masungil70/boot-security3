@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.kosa.hello.member.MemberMapper">
+<!-- 
+테이블 스크립트   
+CREATE TABLE `tb_member2` (
+	`member_id` VARCHAR(50) NOT NULL COMMENT '회원아이디' COLLATE 'utf8mb4_general_ci',
+	`member_pwd` VARCHAR(100) NOT NULL COMMENT '회원비밀번호' COLLATE 'utf8mb4_general_ci',
+	`member_name` VARCHAR(100) NOT NULL COMMENT '회원이름' COLLATE 'utf8mb4_general_ci',
+	`member_address` VARCHAR(100) NOT NULL COMMENT '회원 집 주소' COLLATE 'utf8mb4_general_ci',
+	`member_phone_number` VARCHAR(13) NOT NULL COMMENT '회원 전화번호' COLLATE 'utf8mb4_general_ci',
+	`member_gender` VARCHAR(10) NOT NULL COMMENT '회원 성별' COLLATE 'utf8mb4_general_ci',
+	`member_reg_date` DATETIME NOT NULL DEFAULT current_timestamp() COMMENT '회원가입일시',
+	`member_update_date` DATETIME NOT NULL DEFAULT current_timestamp() COMMENT '회원정보수정일시',
+	`member_roles` VARCHAR(200) NOT NULL DEFAULT 'USER' COLLATE 'utf8mb4_general_ci',
+	`member_account_expired` CHAR(1) NOT NULL DEFAULT 'N' COLLATE 'utf8mb4_general_ci',
+	`member_account_locked` CHAR(1) NOT NULL DEFAULT 'N' COLLATE 'utf8mb4_general_ci',
+	`member_login_count` INT(11) NOT NULL DEFAULT '0',
+	`member_last_login_time` TIMESTAMP NOT NULL DEFAULT current_timestamp()
+	PRIMARY KEY (`member_id`) USING BTREE
+)
+ENGINE=InnoDB
+;
+ -->
+
+    
+	<select id="login" resultType="org.kosa.hello.entity.MemberVO">
+		select 
+			*  
+		from tb_member2   
+		where member_id = #{member_id}
+	</select>
+	
+	<update id="updateMemberLastLogin">
+		update tb_member2 set 
+			member_last_login_time = now()
+		where member_id = #{member_id}  
+	</update>
+	
+	<update id="loginCountInc">
+		update tb_member2 set 
+			member_login_count = member_login_count + 1
+			<choose>
+				<when test="member_login_count > 5">
+					, member_account_locked = 'Y'
+				</when>
+				<otherwise>
+					, member_account_locked = 'N'
+				</otherwise>
+			</choose>
+		where member_id = #{member_id} 
+	</update> 
+
+	 
+	<update id="loginCountClear">
+		update tb_member2 set 
+			 member_login_count = 0 
+			,member_account_locked = 'N'
+		where member_id = #{member_id} 
+	</update> 
+	
+    
+</mapper>
