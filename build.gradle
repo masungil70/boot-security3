@@ -32,13 +32,14 @@ dependencies {
 
 	//tomcat 서버 
 	implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
 	//서블릿 jsp 설정    
 	implementation 'jakarta.servlet:jakarta.servlet-api' //스프링부트 3.0 이상
 	
 	//jstl 설정 
 	implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api' //스프링부트 3.0 이상
-    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl' //스프링부트 3.0 이상
+        implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl' //스프링부트 3.0 이상
 
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 	
@@ -46,7 +47,6 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
 	
-	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 }
